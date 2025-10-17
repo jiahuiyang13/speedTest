@@ -1,6 +1,21 @@
 # installer.ps1 — Fast.com prerequisites installer (Node LTS + fast-cli)
 # Uses npm.cmd (not npm.ps1) to avoid execution policy issues.
-
+# --- Auto-elevate to Administrator ---
+if (-not ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole(
+    [Security.Principal.WindowsBuiltinRole] "Administrator"
+)) {
+    Write-Host "Restarting script with Administrator privileges..." -ForegroundColor Yellow
+    $psi = New-Object System.Diagnostics.ProcessStartInfo
+    $psi.FileName = "powershell.exe"
+    $psi.Arguments = "-ExecutionPolicy Bypass -File `"$PSCommandPath`""
+    $psi.Verb = "runas"
+    try {
+        [System.Diagnostics.Process]::Start($psi) | Out-Null
+    } catch {
+        Write-Host "❌ Administrator privileges are required. Exiting." -ForegroundColor Red
+    }
+    exit
+}
 Write-Host "Installing prerequisites..." -ForegroundColor Cyan
 
 # --- Node.js ---
